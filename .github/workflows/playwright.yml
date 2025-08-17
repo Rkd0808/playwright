@@ -1,3 +1,5 @@
+# Nightly RudderStack E2E Tests - Playwright
+
 name: Nightly RudderStack E2E Tests - Playwright
 
 on:
@@ -18,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         environment: [qa, prod]
-        browser: [chromium, edge]
+        browser: [chromium, firefox]
 
     steps:
       - name: Checkout repository
@@ -34,39 +36,47 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: cross-env ENV=qa npx cucumber-js --config cucumber.config.js
+        run: npx playwright install
 
       - name: Create environment file
         run: |
           mkdir -p config/env
           cat << EOF > config/env/.env.${{ matrix.environment }}
           BASE_URL=${{ secrets.BASE_URL }}
-          RS_USERNAME=${{ secrets.RS_USERNAME }}
-          RS_PASSWORD=${{ secrets.RS_PASSWORD }}
+          USERNAME=${{ secrets.RS_USERNAME }}
+          PASSWORD=${{ secrets.RS_PASSWORD }}
           DATA_PLANE_URL=${{ secrets.DATA_PLANE_URL }}
           WRITE_KEY=${{ secrets.WRITE_KEY }}
           WEBHOOK_URL=${{ secrets.WEBHOOK_URL }}
           BROWSER=${{ matrix.browser }}
           HEADLESS=true
+          TEST_TIMEOUT=60000
+          API_RETRY_COUNT=3
           EOF
 
-      - name: Run Cucumber tests (QA)
-        run: npx dotenv -e config/env/.env.qa -- npx cucumber-js --config cucumber.config.js
-
-      - name: Run Playwright tests
+      - name: Run Cucumber tests
         env:
           ENV: ${{ matrix.environment }}
           BROWSER: ${{ matrix.browser }}
-        run: |
-          npx playwright test
+        run: cross-env ENV=${{ matrix.environment }} BROWSER=${{ matrix.browser }} npx cucumber-js --config cucumber.config.js
 
-      - name: Upload Playwright report
+      - name: Upload test reports
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report-${{ matrix.environment }}-${{ matrix.browser }}
-          path: playwright-report/
+          name: test-reports-${{ matrix.environment }}-${{ matrix.browser }}
+          path: |
+            playwright-report/
+            test-results/
           retention-days: 7
+
+      - name: Upload test fixtures
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-fixtures-${{ matrix.environment }}-${{ matrix.browser }}
+          path: tests/fixtures/
+          retention-days: 3
 
   notify-results:
     runs-on: ubuntu-22.04
