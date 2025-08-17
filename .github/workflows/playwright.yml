@@ -2,10 +2,11 @@ name: Nightly RudderStack E2E Tests - Playwright
 
 on:
   schedule:
-    - cron: '0 1 * * *'  # Run at 1 AM UTC daily
-  workflow_dispatch:
+    - cron: '0 1 * * *'  # Run daily at 1 AM UTC
+  workflow_dispatch: {}
   push:
-    branches: [ main ]
+    branches:
+      - main
     paths:
       - 'tests/**'
       - '.github/workflows/**'
@@ -86,18 +87,13 @@ jobs:
     runs-on: ubuntu-22.04
     needs: playwright-tests
     if: always()
-
     steps:
       - name: Notify on success
         if: needs.playwright-tests.result == 'success'
-        run: |
-          echo "✅ All RudderStack Playwright E2E tests passed successfully!"
+        run: echo "✅ All RudderStack Playwright E2E tests passed successfully!"
 
       - name: Notify on failure
         if: needs.playwright-tests.result == 'failure'
         run: |
           echo "❌ Some RudderStack Playwright E2E tests failed. Check the logs and artifacts."
           exit 1
-
-          
-
