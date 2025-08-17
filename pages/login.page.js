@@ -31,39 +31,6 @@ class LoginPage {
     await this.goToDashboardButton.click();
     await this.closeAlert.click();
   }
-
-  async loginWithValidation(email, password) {
-    await this.emailInput.fill(email);
-    await this.passwordInput.fill(password);
-    await this.emailInput.shouldHaveValue(email);
-    await this.passwordInput.shouldHaveValue(password);
-    await this.loginButton.click();
-  }
-
-  async validateLoginFormExists() {
-    await Promise.all([
-      this.emailInput.waitFor({ state: 'attached' }),
-      this.passwordInput.waitFor({ state: 'attached' }),
-      this.loginButton.waitFor({ state: 'attached' })
-    ]);
-  }
-
-  async validateEmailError() {
-    const err = this.page.locator('.error, .invalid, [data-testid="email-error"]');
-    await err.waitFor({ state: 'visible' });
-    await expect(err).toContainText('email');
-  }
-
-  async validatePasswordError() {
-    const err = this.page.locator('.error, .invalid, [data-testid="password-error"]');
-    await err.waitFor({ state: 'visible' });
-    await expect(err).toContainText('password');
-  }
-   async navigateToConnections() {
-    await this.connectionsNavLink.click();
-    await this.page.waitForURL('**/connections**');
-  }
-
   async getDataPlaneURL() {
     // Find span containing 'Data Plane', then its container, then the span before the button
     const container = this.page.locator('span:text("Data Plane")').locator('xpath=..').locator('xpath=..');

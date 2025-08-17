@@ -1,8 +1,5 @@
 Feature: RudderStack Login and Setup
 
-  # Background:
-  #   Given I navigate to the RudderStack application
-
   @smoke @login
 Scenario: Verify events are delivered to Webhook destination
   Given I log in to RudderStack workspace
