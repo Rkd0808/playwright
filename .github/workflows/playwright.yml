@@ -34,7 +34,7 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        run: cross-env ENV=qa npx cucumber-js --config cucumber.config.js
 
       - name: Create environment file
         run: |
