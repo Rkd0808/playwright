@@ -50,6 +50,9 @@ jobs:
           HEADLESS=true
           EOF
 
+      - name: Run Cucumber tests (QA)
+        run: npx dotenv -e config/env/.env.qa -- npx cucumber-js --config cucumber.config.js
+
       - name: Run Playwright tests
         env:
           ENV: ${{ matrix.environment }}
