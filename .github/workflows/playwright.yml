@@ -22,11 +22,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        env: [ ${{ github.event.inputs.environment || 'qa' }} ]
-        # 👉 If workflow_dispatch is used → run selected env
-        # 👉 If push/PR → defaults to QA (you can change)
+    # RUN_ENV = selected env for workflow_dispatch; otherwise default to 'qa' for push/PR
+    env:
+      RUN_ENV: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || 'qa' }}
 
     steps:
       - name: Checkout repository
@@ -45,26 +43,40 @@ jobs:
 
       - name: Map environment-specific secrets
         run: |
-          if [ "${{ matrix.env }}" = "dev" ]; then
+          echo "ENV=${RUN_ENV}" >> $GITHUB_ENV
+          # Force headless in CI since your config reads HEADLESS
+          echo "HEADLESS=true" >> $GITHUB_ENV
+
+          if [ "${RUN_ENV}" = "dev" ]; then
             echo "BASE_URL=${{ secrets.BASE_URL_DEV }}" >> $GITHUB_ENV
             echo "RS_EMAIL=${{ secrets.RS_EMAIL_DEV }}" >> $GITHUB_ENV
             echo "RS_PASSWORD=${{ secrets.RS_PASSWORD_DEV }}" >> $GITHUB_ENV
-          elif [ "${{ matrix.env }}" = "qa" ]; then
+            echo "DATA_PLANE_URL=${{ secrets.DATA_PLANE_URL_DEV }}" >> $GITHUB_ENV
+            echo "WRITE_KEY=${{ secrets.WRITE_KEY_DEV }}" >> $GITHUB_ENV
+            echo "WEBHOOK_URL=${{ secrets.WEBHOOK_URL_DEV }}" >> $GITHUB_ENV
+          elif [ "${RUN_ENV}" = "qa" ]; then
             echo "BASE_URL=${{ secrets.BASE_URL_QA }}" >> $GITHUB_ENV
             echo "RS_EMAIL=${{ secrets.RS_EMAIL_QA }}" >> $GITHUB_ENV
             echo "RS_PASSWORD=${{ secrets.RS_PASSWORD_QA }}" >> $GITHUB_ENV
-          elif [ "${{ matrix.env }}" = "prod" ]; then
+            echo "DATA_PLANE_URL=${{ secrets.DATA_PLANE_URL_QA }}" >> $GITHUB_ENV
+            echo "WRITE_KEY=${{ secrets.WRITE_KEY_QA }}" >> $GITHUB_ENV
+            echo "WEBHOOK_URL=${{ secrets.WEBHOOK_URL_QA }}" >> $GITHUB_ENV
+          elif [ "${RUN_ENV}" = "prod" ]; then
             echo "BASE_URL=${{ secrets.BASE_URL_PROD }}" >> $GITHUB_ENV
             echo "RS_EMAIL=${{ secrets.RS_EMAIL_PROD }}" >> $GITHUB_ENV
             echo "RS_PASSWORD=${{ secrets.RS_PASSWORD_PROD }}" >> $GITHUB_ENV
+            echo "DATA_PLANE_URL=${{ secrets.DATA_PLANE_URL_PROD }}" >> $GITHUB_ENV
+            echo "WRITE_KEY=${{ secrets.WRITE_KEY_PROD }}" >> $GITHUB_ENV
+            echo "WEBHOOK_URL=${{ secrets.WEBHOOK_URL_PROD }}" >> $GITHUB_ENV
           fi
 
       - name: Run Cucumber Tests
-        run: npm run test:${{ matrix.env }}
+        run: npm run test:${{ env.RUN_ENV }}
 
       - name: Upload Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: reports-${{ matrix.env }}
-          path: playwright-report/
+          name: reports-${{ env.RUN_ENV }}
+          path: playwright-report/**
+          if-no-files-found: ignore
