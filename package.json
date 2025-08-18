@@ -6,6 +6,7 @@
   "scripts": {
     "test:dev": "cross-env ENV=dev npx cucumber-js --config cucumber.config.js",
     "test:qa": "cross-env ENV=qa npx cucumber-js --config cucumber.config.js",
+     "test:ci": "cross-env RUN_ENV=ci npx cucumber-js --config cucumber.config.js",
     "test:prod": "cross-env ENV=prod npx cucumber-js --config cucumber.config.js",
     "test:debug": "DEBUG=true npm test",
     "format": "prettier --write .",

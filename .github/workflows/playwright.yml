@@ -1,15 +1,13 @@
-name: Run Playwright Cucumber Tests
+name: Run Playwright+Cucumber Tests
 
 on:
-  schedule:
-    - cron: '30 14 * * *' # Runs at 8:00 PM IST (14:30 UTC) every day
   workflow_dispatch:
   push:
     branches:
       - main
 
 jobs:
-  playwright-run:
+  e2e-tests:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,31 +22,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
-
-      - name: Run QA Playwright + Cucumber tests
-        id: run_playwright_tests
-        run: npm run test:qa
+      - name: Run Playwright+Cucumber tests
+        run: npm run test:ci
         env:
-          ENV: qa
+          RUN_ENV: ci                # 👈 tells env.js to skip dotenv
           BASE_URL: ${{ secrets.BASE_URL }}
           RS_EMAIL: ${{ secrets.RS_EMAIL }}
           RS_PASSWORD: ${{ secrets.RS_PASSWORD }}
-          DATA_PLANE_URL: ${{ secrets.DATA_PLANE_URL_QA }}
-          WRITE_KEY: ${{ secrets.WRITE_KEY_QA }}
-          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL_QA }}
+          DATA_PLANE_URL: ${{ secrets.DATA_PLANE_URL }}
+          WRITE_KEY: ${{ secrets.WRITE_KEY }}
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
 
-      - name: Upload Playwright HTML report
+      - name: Upload Playwright+Cucumber Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-${{ github.run_id }}
+          name: playwright-cucumber-report-${{ github.run_id }}
           path: playwright-report
-
-      - name: Summary Report
-        if: always()
-        run: |
-          echo "## Playwright Cucumber Test Report" >> $GITHUB_STEP_SUMMARY
-          echo "Workflow completed at: $(date)" >> $GITHUB_STEP_SUMMARY
-          echo "Artifacts uploaded: Playwright report (HTML + JSON)" >> $GITHUB_STEP_SUMMARY
