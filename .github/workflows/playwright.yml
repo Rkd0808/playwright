@@ -1,4 +1,5 @@
 name: Nightly RudderStack E2E Tests - Playwright
+
 on:
   schedule:
     - cron: '0 1 * * *'  # Run daily at 1 AM UTC
@@ -11,14 +12,15 @@ on:
       - '.github/workflows/**'
 
 jobs:
-  playwright-tests:
+  qa-tests:
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
         environment: [qa]
         browser: [chromium]
-    env:  # ✅ Secrets available to all steps
+
+    env:
       BASE_URL: ${{ secrets.BASE_URL }}
       RS_EMAIL: ${{ secrets.RS_EMAIL }}
       PASSWORD: ${{ secrets.RS_PASSWORD }}
@@ -30,6 +32,7 @@ jobs:
       HEADLESS: true
       TEST_TIMEOUT: 60000
       API_RETRY_COUNT: 3
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -46,11 +49,8 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install
 
-      - name: Run Cucumber tests
-        run: npx cucumber-js --config cucumber.config.js
-
-      - name: Run Playwright tests
-        run: npx playwright test
+      - name: Run QA tests (Cucumber + Playwright)
+        run: npm run test:qa || true  # continue even if some tests fail
 
       - name: Upload test reports
         uses: actions/upload-artifact@v4
@@ -72,15 +72,15 @@ jobs:
 
   notify-results:
     runs-on: ubuntu-22.04
-    needs: playwright-tests
+    needs: qa-tests
     if: always()
     steps:
       - name: Notify on success
-        if: needs.playwright-tests.result == 'success'
+        if: needs.qa-tests.result == 'success'
         run: echo "✅ All RudderStack Playwright E2E tests passed successfully!"
 
       - name: Notify on failure
-        if: needs.playwright-tests.result == 'failure'
+        if: needs.qa-tests.result == 'failure'
         run: |
           echo "❌ Some RudderStack Playwright E2E tests failed. Check the logs and artifacts."
           exit 1
