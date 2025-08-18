@@ -1,6 +1,18 @@
 name: Playwright Cucumber Tests
 
 on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Select environment to run tests against"
+        required: true
+        default: "qa"
+        type: choice
+        options:
+          - dev
+          - qa
+          - prod
+
   push:
     branches: [ main ]
   pull_request:
@@ -12,7 +24,9 @@ jobs:
 
     strategy:
       matrix:
-        env: [dev, qa, prod]
+        env: [ ${{ github.event.inputs.environment || 'qa' }} ]
+        # 👉 If workflow_dispatch is used → run selected env
+        # 👉 If push/PR → defaults to QA (you can change)
 
     steps:
       - name: Checkout repository
