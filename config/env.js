@@ -19,6 +19,9 @@ if (!isCI) {
 
 // Required variables
 const requiredVars = ['BASE_URL', 'RS_EMAIL', 'RS_PASSWORD'];
+  console.log(`BASE_URL: ${process.env.BASE_URL}`);
+  console.log(`USERNAME is set? ${!!process.env.RS_EMAIL}`);
+  console.log(`RS_PASSWORD is set? ${!!process.env.RS_PASSWORD}`);
 requiredVars.forEach(v => {
   if (!process.env[v]) {
     console.error(`❌ Missing required environment variable: ${v}`);
