@@ -18,6 +18,18 @@ jobs:
       matrix:
         environment: [qa]
         browser: [chromium]
+    env:  # ✅ Secrets available to all steps
+      BASE_URL: ${{ secrets.BASE_URL }}
+      RS_EMAIL: ${{ secrets.RS_EMAIL }}
+      PASSWORD: ${{ secrets.RS_PASSWORD }}
+      DATA_PLANE_URL: ${{ secrets.DATA_PLANE_URL }}
+      WRITE_KEY: ${{ secrets.WRITE_KEY }}
+      WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+      ENV: ${{ matrix.environment }}
+      BROWSER: ${{ matrix.browser }}
+      HEADLESS: true
+      TEST_TIMEOUT: 60000
+      API_RETRY_COUNT: 3
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -34,53 +46,10 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install
 
-      - name: Set environment variables from secrets
-        env:
-          BASE_URL: ${{ secrets.BASE_URL }}
-          USERNAME: ${{ secrets.RS_USERNAME }}
-          PASSWORD: ${{ secrets.RS_PASSWORD }}
-          DATA_PLANE_URL: ${{ secrets.DATA_PLANE_URL }}
-          WRITE_KEY: ${{ secrets.WRITE_KEY }}
-          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
-          BROWSER: ${{ matrix.browser }}
-          HEADLESS: true
-          TEST_TIMEOUT: 60000
-          API_RETRY_COUNT: 3
-        run: |
-          echo "Creating .env file for ${{ matrix.environment }}"
-          mkdir -p config/env
-          cat <<EOF > config/env/.env.${{ matrix.environment }}
-          BASE_URL=$BASE_URL
-          USERNAME=$USERNAME
-          PASSWORD=$PASSWORD
-          DATA_PLANE_URL=$DATA_PLANE_URL
-          WRITE_KEY=$WRITE_KEY
-          WEBHOOK_URL=$WEBHOOK_URL
-          BROWSER=$BROWSER
-          HEADLESS=$HEADLESS
-          TEST_TIMEOUT=$TEST_TIMEOUT
-          API_RETRY_COUNT=$API_RETRY_COUNT
-          EOF
-          echo "---- env file contents ----"
-          cat config/env/.env.${{ matrix.environment }} | sed 's/=.*/=****/'
-          echo "---- end ----"
-
       - name: Run Cucumber tests
-        env:
-          ENV: ${{ matrix.environment }}
-          BROWSER: ${{ matrix.browser }}
-          BASE_URL: ${{ secrets.BASE_URL }}
-          RS_EMAIL: ${{ secrets.RS_EMAIL }}
-          RS_PASSWORD: ${{ secrets.RS_PASSWORD }}
-        run: npx cross-env ENV=${{ matrix.environment }} BROWSER=${{ matrix.browser }} npx cucumber-js --config cucumber.config.js
+        run: npx cucumber-js --config cucumber.config.js
 
       - name: Run Playwright tests
-        env:
-          ENV: ${{ matrix.environment }}
-          BROWSER: ${{ matrix.browser }}
-          BASE_URL: ${{ secrets.BASE_URL }}
-          RS_EMAIL: ${{ secrets.RS_EMAIL }}
-          RS_PASSWORD: ${{ secrets.RS_PASSWORD }}
         run: npx playwright test
 
       - name: Upload test reports
