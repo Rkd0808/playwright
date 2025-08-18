@@ -2,8 +2,8 @@ require('../../config/env.js');
 
 const { Given, When, Then, Before } = require('@cucumber/cucumber');
 const fs = require('fs').promises;
-const LoginPage = require('../../pages/login.page.js').default;
-const ConnectionsPage = require('../../pages/connections.page.js').default;
+const LoginPage = require('../../pages/login.page.js');
+const ConnectionsPage = require('../../pages/connections.page.js');
 const { createAPIContext, callRudderstack } = require('../../utils/rudderstack.helper.js');
 const assert = require('assert');
 
