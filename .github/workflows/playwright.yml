@@ -41,7 +41,7 @@ jobs:
           mkdir -p config/env
           cat << EOF > config/env/.env.${{ matrix.environment }}
           BASE_URL=${{ secrets.BASE_URL }}
-          USERNAME=${{ secrets.RS_USERNAME }}
+          USERNAME=${{ secrets.RS_EMAIL }}
           PASSWORD=${{ secrets.RS_PASSWORD }}
           BROWSER=${{ matrix.browser }}
           HEADLESS=true
@@ -57,7 +57,7 @@ jobs:
           echo "✅ Required secrets are set"
         env:
           BASE_URL: ${{ secrets.BASE_URL }}
-          USERNAME: ${{ secrets.RS_USERNAME }}
+          USERNAME: ${{ secrets.RS_EMAIL }}
           PASSWORD: ${{ secrets.RS_PASSWORD }}
 
       - name: Run Cucumber tests
