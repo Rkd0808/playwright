@@ -1,4 +1,5 @@
 name: Nightly RudderStack E2E Tests - Playwright
+
 on:
   schedule:
     - cron: '0 1 * * *'  # Run daily at 1 AM UTC
@@ -18,6 +19,7 @@ jobs:
       matrix:
         environment: [qa]
         browser: [chromium]
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -34,35 +36,35 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install
 
-      - name: Create env file
+      - name: Create minimal environment file
         run: |
           mkdir -p config/env
           cat << EOF > config/env/.env.${{ matrix.environment }}
           BASE_URL=${{ secrets.BASE_URL }}
           USERNAME=${{ secrets.RS_USERNAME }}
           PASSWORD=${{ secrets.RS_PASSWORD }}
-          DATA_PLANE_URL=${{ secrets.DATA_PLANE_URL }}
-          WRITE_KEY=${{ secrets.WRITE_KEY }}
-          WEBHOOK_URL=${{ secrets.WEBHOOK_URL }}
           BROWSER=${{ matrix.browser }}
           HEADLESS=true
-          TEST_TIMEOUT=60000
-          API_RETRY_COUNT=3
           EOF
 
-      - name: Debug env file 🔍
+      - name: Validate required secrets
         run: |
-          echo "Listing config/env directory..."
-          ls -la config/env
-          echo "---- env file contents ----"
-          cat config/env/.env.${{ matrix.environment }} | sed 's/\(PASSWORD=\).*/\1******/' | sed 's/\(USERNAME=\).*/\1******/' | sed 's/\(WRITE_KEY=\).*/\1******/' | sed 's/\(WEBHOOK_URL=\).*/\1******/'
-          echo "---- end ----"
+          if [ -z "$BASE_URL" ] || [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]; then
+            echo "❌ Missing one of the required secrets: BASE_URL, USERNAME, PASSWORD"
+            echo "Check repo settings → Secrets and variables → Actions"
+            exit 1
+          fi
+          echo "✅ Required secrets are set"
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
+          USERNAME: ${{ secrets.RS_USERNAME }}
+          PASSWORD: ${{ secrets.RS_PASSWORD }}
 
       - name: Run Cucumber tests
         env:
           ENV: ${{ matrix.environment }}
           BROWSER: ${{ matrix.browser }}
-        run: npx cucumber-js --config cucumber.config.js
+        run: npx cross-env ENV=${{ matrix.environment }} BROWSER=${{ matrix.browser }} npx cucumber-js --config cucumber.config.js
 
       - name: Run Playwright tests
         env:
