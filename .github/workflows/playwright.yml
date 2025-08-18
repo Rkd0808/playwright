@@ -19,9 +19,7 @@ jobs:
       matrix:
         environment: [qa]
         browser: [chromium]
-    env:
-      # ✅ Required secrets
-      CI: 'true'                       # important for your env.js to detect CI
+    env:  # ✅ Secrets available to all steps
       BASE_URL: ${{ secrets.BASE_URL }}
       RS_EMAIL: ${{ secrets.RS_EMAIL }}
       RS_PASSWORD: ${{ secrets.RS_PASSWORD }}
@@ -50,15 +48,14 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install
 
-      - name: Debug environment
-        run: |
-          echo "ENV=$ENV"
-          echo "BASE_URL=$BASE_URL"
-          echo "RS_EMAIL=$RS_EMAIL"
-          echo "RS_PASSWORD is set? ${RS_PASSWORD:+true}"
-
       - name: Run Cucumber QA tests
-        run: npm run test:qa
+        run: |
+          npx cross-env \
+            BASE_URL=$BASE_URL \
+            RS_EMAIL=$RS_EMAIL \
+            RS_PASSWORD=$RS_PASSWORD \
+            ENV=$ENV \
+            npx cucumber-js --config cucumber.config.js
 
       - name: Run Playwright tests
         run: npx playwright test
