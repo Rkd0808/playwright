@@ -19,7 +19,7 @@ if (!isCI) {
 }
 
 // Required variables
-const requiredVars = ['BASE_URL', 'RS_EMAIL', 'RS_PASSWORD'];
+const requiredVars = ['BASE_URL_QA', 'RS_EMAIL', 'RS_PASSWORD'];
 
 requiredVars.forEach((v) => {
   if (!process.env[v]) {
