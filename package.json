@@ -2,7 +2,6 @@
   "name": "playwright-cucumber-rudderstack-framework",
   "version": "1.0.0",
   "description": "Playwright + Cucumber automation framework with RudderStack integration",
-  "type": "module",
   "main": "index.js",
   "scripts": {
     "test:dev": "cross-env ENV=dev npx cucumber-js --config cucumber.config.js",
