@@ -12,18 +12,19 @@ on:
       - '.github/workflows/**'
 
 jobs:
-  qa-tests:
+  playwright-tests:
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
         environment: [qa]
         browser: [chromium]
-
     env:
+      # ✅ Required secrets
+      CI: 'true'                       # important for your env.js to detect CI
       BASE_URL: ${{ secrets.BASE_URL }}
       RS_EMAIL: ${{ secrets.RS_EMAIL }}
-      PASSWORD: ${{ secrets.RS_PASSWORD }}
+      RS_PASSWORD: ${{ secrets.RS_PASSWORD }}
       DATA_PLANE_URL: ${{ secrets.DATA_PLANE_URL }}
       WRITE_KEY: ${{ secrets.WRITE_KEY }}
       WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
@@ -49,8 +50,18 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install
 
-      - name: Run QA tests (Cucumber + Playwright)
-        run: npm run test:qa || true  # continue even if some tests fail
+      - name: Debug environment
+        run: |
+          echo "ENV=$ENV"
+          echo "BASE_URL=$BASE_URL"
+          echo "RS_EMAIL=$RS_EMAIL"
+          echo "RS_PASSWORD is set? ${RS_PASSWORD:+true}"
+
+      - name: Run Cucumber QA tests
+        run: npm run test:qa
+
+      - name: Run Playwright tests
+        run: npx playwright test
 
       - name: Upload test reports
         uses: actions/upload-artifact@v4
@@ -72,15 +83,15 @@ jobs:
 
   notify-results:
     runs-on: ubuntu-22.04
-    needs: qa-tests
+    needs: playwright-tests
     if: always()
     steps:
       - name: Notify on success
-        if: needs.qa-tests.result == 'success'
+        if: needs.playwright-tests.result == 'success'
         run: echo "✅ All RudderStack Playwright E2E tests passed successfully!"
 
       - name: Notify on failure
-        if: needs.qa-tests.result == 'failure'
+        if: needs.playwright-tests.result == 'failure'
         run: |
           echo "❌ Some RudderStack Playwright E2E tests failed. Check the logs and artifacts."
           exit 1
