@@ -1,28 +1,36 @@
+// config/env.js
 const path = require('path');
 const dotenv = require('dotenv');
 
-const projectRoot = process.cwd();
+const isCI = process.env.CI === 'true';
 
-// Detect environment: default to 'dev'
-const ENV = process.env.ENV || 'dev';
-const envFileName = `.env.${ENV}`;
-const envPath = path.resolve(projectRoot, 'config', 'env', envFileName);
+// Load .env files only locally
+if (!isCI) {
+  const ENV = process.env.ENV || 'dev';
+  const envFilePath = path.resolve(process.cwd(), 'config', 'env', `.env.${ENV}`);
+  const result = dotenv.config({ path: envFilePath });
 
-// Only load .env file if not in CI
-if (!process.env.CI) {
-  const result = dotenv.config({ path: envPath });
   if (result.error) {
-    console.warn(`⚠️ Could not load env file at ${envPath}`);
+    console.warn(`⚠️ Could not load env file at ${envFilePath}`);
   } else {
-    console.log(`✅ Loaded env file: ${envPath}`);
+    console.log(`✅ Loaded env file: ${envFilePath}`);
   }
 }
 
-// Check required environment variables
-const REQUIRED_VARS = ['BASE_URL', 'RS_EMAIL', 'RS_PASSWORD'];
-REQUIRED_VARS.forEach((key) => {
-  if (!process.env[key]) {
-    throw new Error(`❌ Missing required environment variable: ${key}`);
+// Required variables
+const requiredVars = ['BASE_URL', 'RS_EMAIL', 'RS_PASSWORD'];
+  console.log(`BASE_URL: ${process.env.BASE_URL}`);
+  console.log(`USERNAME is set? ${!!process.env.RS_EMAIL}`);
+  console.log(`RS_PASSWORD is set? ${!!process.env.RS_PASSWORD}`);
+requiredVars.forEach(v => {
+  if (!process.env[v]) {
+    console.error(`❌ Missing required environment variable: ${v}`);
+    if (!isCI) {
+      console.error(`Make sure it is set in your local .env file`);
+    } else {
+      console.error(`Set it as a GitHub Actions secret`);
+    }
+    process.exit(1);
   }
 });
 
