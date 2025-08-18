@@ -1,13 +1,11 @@
 // config/env.js
 import path from 'path';
-import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
+// Use process.cwd() for more reliable path resolution in CI
+const projectRoot = process.cwd();
 const envFileName = process.env.DOTENV_CONFIG_PATH || `.env.${process.env.ENV || 'dev'}`;
-const envPath = path.resolve(__dirname, 'env', envFileName);
+const envPath = path.resolve(projectRoot, 'config', 'env', envFileName);
 
 dotenv.config({ path: envPath });
 
@@ -17,3 +15,4 @@ if (process.env.DEBUG === 'true') {
   console.log(`BASE_URL: ${process.env.BASE_URL}`);
   console.log(`RS_USER: ${process.env.EMAIL ? '******' : 'NOT SET'}`);
 }
+
