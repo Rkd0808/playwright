@@ -2,11 +2,10 @@ name: Nightly RudderStack E2E Tests - Playwright
 
 on:
   schedule:
-    - cron: '0 1 * * *'  # Run daily at 1 AM UTC
+    - cron: '0 1 * * *'
   workflow_dispatch: {}
   push:
-    branches:
-      - main
+    branches: [ main ]
     paths:
       - 'tests/**'
       - '.github/workflows/**'
@@ -17,10 +16,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        environment: [qa]
-        browser: [chromium]
+        environment: [ qa ]
+        browser: [ chromium ]
     env:
-      # Secrets available to all steps
       BASE_URL: ${{ secrets.BASE_URL }}
       RS_EMAIL: ${{ secrets.RS_EMAIL }}
       RS_PASSWORD: ${{ secrets.RS_PASSWORD }}
@@ -34,29 +32,24 @@ jobs:
       API_RETRY_COUNT: 3
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
 
-      - name: Install Playwright browsers
-        run: npx playwright install
+      - run: npx playwright install
 
-      - name: Run Cucumber QA tests
+      - name: Run QA end-to-end tests
         run: npm run test:qa
 
       - name: Run Playwright tests
         run: npx playwright test
 
-      - name: Upload test reports
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-reports-${{ matrix.environment }}-${{ matrix.browser }}
@@ -65,8 +58,7 @@ jobs:
             test-results/
           retention-days: 7
 
-      - name: Upload test fixtures
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-fixtures-${{ matrix.environment }}-${{ matrix.browser }}
@@ -78,12 +70,10 @@ jobs:
     needs: playwright-tests
     if: always()
     steps:
-      - name: Notify on success
+      - run: echo "✅ All RudderStack Playwright E2E tests passed successfully!"
         if: needs.playwright-tests.result == 'success'
-        run: echo "✅ All RudderStack Playwright E2E tests passed successfully!"
 
-      - name: Notify on failure
-        if: needs.playwright-tests.result == 'failure'
-        run: |
+      - run: |
           echo "❌ Some RudderStack Playwright E2E tests failed. Check the logs and artifacts."
           exit 1
+        if: needs.playwright-tests.result == 'failure'
