@@ -1,49 +1,54 @@
-name: Playwright QA Tests
+name: Run Playwright Cucumber Tests
 
 on:
+  schedule:
+    - cron: '30 14 * * *' # Runs at 8:00 PM IST (14:30 UTC) every day
   workflow_dispatch:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
-  test-qa:
+  playwright-run:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: '22'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Install Playwright Browsers
-        run: npm run install-browsers
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
 
-      - name: Export QA secrets
-        run: |
-          echo "ENV=qa" >> $GITHUB_ENV
-          echo "HEADLESS=true" >> $GITHUB_ENV
-          echo "BASE_URL=${{ secrets.BASE_URL_QA }}" >> $GITHUB_ENV
-          echo "RS_EMAIL=${{ secrets.RS_EMAIL_QA }}" >> $GITHUB_ENV
-          echo "RS_PASSWORD=${{ secrets.RS_PASSWORD_QA }}" >> $GITHUB_ENV
-          echo "DATA_PLANE_URL=${{ secrets.DATA_PLANE_URL_QA }}" >> $GITHUB_ENV
-          echo "WRITE_KEY=${{ secrets.WRITE_KEY_QA }}" >> $GITHUB_ENV
-          echo "WEBHOOK_URL=${{ secrets.WEBHOOK_URL_QA }}" >> $GITHUB_ENV
-
-      - name: Run QA Cucumber Tests
+      - name: Run QA Playwright + Cucumber tests
+        id: run_playwright_tests
         run: npm run test:qa
+        env:
+          ENV: qa
+          BASE_URL: ${{ secrets.BASE_URL_QA }}
+          RS_EMAIL: ${{ secrets.RS_EMAIL_QA }}
+          RS_PASSWORD: ${{ secrets.RS_PASSWORD_QA }}
+          DATA_PLANE_URL: ${{ secrets.DATA_PLANE_URL_QA }}
+          WRITE_KEY: ${{ secrets.WRITE_KEY_QA }}
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL_QA }}
 
-      - name: Upload Reports
+      - name: Upload Playwright HTML report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: reports-qa
-          path: playwright-report/**
-          if-no-files-found: ignore
+          name: playwright-report-${{ github.run_id }}
+          path: playwright-report
+
+      - name: Summary Report
+        if: always()
+        run: |
+          echo "## Playwright Cucumber Test Report" >> $GITHUB_STEP_SUMMARY
+          echo "Workflow completed at: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "Artifacts uploaded: Playwright report (HTML + JSON)" >> $GITHUB_STEP_SUMMARY
