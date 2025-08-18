@@ -25,6 +25,7 @@ jobs:
       DATA_PLANE_URL: ${{ secrets.DATA_PLANE_URL }}
       WRITE_KEY: ${{ secrets.WRITE_KEY }}
       WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+      ENV: ${{ matrix.environment }}
       BROWSER: ${{ matrix.browser }}
       HEADLESS: true
       TEST_TIMEOUT: 60000
@@ -46,7 +47,7 @@ jobs:
         run: npx playwright install
 
       - name: Run Cucumber tests
-        run: npx cross-env ENV=${{ matrix.environment }} BROWSER=${{ matrix.browser }} npx cucumber-js --config cucumber.config.js
+        run: npx cucumber-js --config cucumber.config.js
 
       - name: Run Playwright tests
         run: npx playwright test
