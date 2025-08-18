@@ -1,13 +1,15 @@
-name: Run Playwright+Cucumber Tests
+name: Run Playwright Tests Daily
 
 on:
+  schedule:
+    - cron: '30 14 * * *' # Runs at 8:00 PM IST (14:30 UTC) every day
   workflow_dispatch:
   push:
     branches:
       - main
 
 jobs:
-  e2e-tests:
+  playwright-run:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,20 +24,43 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run Playwright+Cucumber tests
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests
         run: npm run test:ci
         env:
-          RUN_ENV: ci                # 👈 tells env.js to skip dotenv
           BASE_URL: ${{ secrets.BASE_URL }}
           RS_EMAIL: ${{ secrets.RS_EMAIL }}
           RS_PASSWORD: ${{ secrets.RS_PASSWORD }}
-          DATA_PLANE_URL: ${{ secrets.DATA_PLANE_URL }}
-          WRITE_KEY: ${{ secrets.WRITE_KEY }}
-          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
 
-      - name: Upload Playwright+Cucumber Report
+      - name: Upload Playwright screenshots (if any)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-cucumber-report-${{ github.run_id }}
+          name: playwright-screenshots
+          path: test-results/screenshots
+
+      - name: Upload Playwright videos (if any)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-videos
+          path: test-results/videos
+
+      - name: Upload Playwright HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.run_id }}
           path: playwright-report
+
+      - name: Generate Playwright Test Summary
+        if: always()
+        run: |
+          echo "## Playwright Test Report" >> $GITHUB_STEP_SUMMARY
+          echo "Workflow completed at: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "Artifacts uploaded:" >> $GITHUB_STEP_SUMMARY
+          echo "- Screenshots" >> $GITHUB_STEP_SUMMARY
+          echo "- Videos" >> $GITHUB_STEP_SUMMARY
+          echo "- HTML report" >> $GITHUB_STEP_SUMMARY
