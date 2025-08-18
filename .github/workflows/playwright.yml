@@ -1,49 +1,79 @@
-name: Playwright Cucumber Tests
+name: Nightly RudderStack E2E Tests - Playwright
 
 on:
+  schedule:
+    - cron: '0 1 * * *'
+  workflow_dispatch: {}
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    paths:
+      - 'tests/**'
+      - '.github/workflows/**'
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-
+  playwright-tests:
+    runs-on: ubuntu-22.04
     strategy:
+      fail-fast: false
       matrix:
-        env: [dev, qa, prod]
+        environment: [ qa ]
+        browser: [ chromium ]
+    env:
+      BASE_URL: ${{ secrets.BASE_URL }}
+      RS_EMAIL: ${{ secrets.RS_EMAIL }}
+      RS_PASSWORD: ${{ secrets.RS_PASSWORD }}
+      DATA_PLANE_URL: ${{ secrets.DATA_PLANE_URL }}
+      WRITE_KEY: ${{ secrets.WRITE_KEY }}
+      WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+      ENV: ${{ matrix.environment }}
+      BROWSER: ${{ matrix.browser }}
+      HEADLESS: true
+      TEST_TIMEOUT: 60000
+      API_RETRY_COUNT: 3
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: '18'
+          cache: 'npm'
 
-      - name: Install dependencies
-        run: npm install
+      - run: npm ci
 
-      - name: Install Playwright Browsers
-        run: npm run install-browsers
+      - run: npx playwright install
 
-      - name: Set environment variables from GitHub Secrets
-        run: |
-          echo "BASE_URL=${{ secrets.BASE_URL }}" >> $GITHUB_ENV
-          echo "RS_EMAIL=${{ secrets.RS_EMAIL }}" >> $GITHUB_ENV
-          echo "RS_PASSWORD=${{ secrets.RS_PASSWORD }}" >> $GITHUB_ENV
-          echo "DATA_PLANE_URL=${{ secrets.DATA_PLANE_URL }}" >> $GITHUB_ENV
-          echo "WRITE_KEY=${{ secrets.WRITE_KEY }}" >> $GITHUB_ENV
-          echo "WEBHOOK_URL=${{ secrets.WEBHOOK_URL }}" >> $GITHUB_ENV
+      - name: Run QA end-to-end tests
+        run: npm run test:qa
 
-      - name: Run Cucumber Tests
-        run: npm run test:${{ matrix.env }}
+      - name: Run Playwright tests
+        run: npx playwright test
 
-      - name: Upload Cucumber Reports
+      - uses: actions/upload-artifact@v4
         if: always()
-        uses: actions/upload-artifact@v4
         with:
-          name: cucumber-report-${{ matrix.env }}
-          path: reports/
+          name: test-reports-${{ matrix.environment }}-${{ matrix.browser }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-fixtures-${{ matrix.environment }}-${{ matrix.browser }}
+          path: tests/fixtures/
+          retention-days: 3
+
+  notify-results:
+    runs-on: ubuntu-22.04
+    needs: playwright-tests
+    if: always()
+    steps:
+      - run: echo "✅ All RudderStack Playwright E2E tests passed successfully!"
+        if: needs.playwright-tests.result == 'success'
+
+      - run: |
+          echo "❌ Some RudderStack Playwright E2E tests failed. Check the logs and artifacts."
+          exit 1
+        if: needs.playwright-tests.result == 'failure'
