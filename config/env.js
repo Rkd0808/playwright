@@ -1,10 +1,11 @@
-// config/env.js
 const path = require('path');
 const dotenv = require('dotenv');
 
 const isCI = process.env.CI === 'true';
 
-// Load .env files only locally
+console.log(`Running in ${isCI ? 'CI' : 'local'} mode.`);
+
+// Load local .env files if not in CI
 if (!isCI) {
   const ENV = process.env.ENV || 'dev';
   const envFilePath = path.resolve(process.cwd(), 'config', 'env', `.env.${ENV}`);
@@ -19,10 +20,8 @@ if (!isCI) {
 
 // Required variables
 const requiredVars = ['BASE_URL', 'RS_EMAIL', 'RS_PASSWORD'];
-  console.log(`BASE_URL: ${process.env.BASE_URL}`);
-  console.log(`USERNAME is set? ${!!process.env.RS_EMAIL}`);
-  console.log(`RS_PASSWORD is set? ${!!process.env.RS_PASSWORD}`);
-requiredVars.forEach(v => {
+
+requiredVars.forEach((v) => {
   if (!process.env[v]) {
     console.error(`❌ Missing required environment variable: ${v}`);
     if (!isCI) {
@@ -30,11 +29,22 @@ requiredVars.forEach(v => {
     } else {
       console.error(`Set it as a GitHub Actions secret`);
     }
-    process.exit(1);
+    process.exit(1); // still exit for safety
   }
 });
 
 if (process.env.DEBUG === 'true') {
-  console.log(`BASE_URL: ${process.env.BASE_URL}`);
-  console.log(`USERNAME is set? ${!!process.env.USERNAME}`);
+  console.log('✅ Environment variables:');
+  requiredVars.forEach((v) => {
+    console.log(`  ${v}: ${!!process.env[v]} (${process.env[v] || 'not set'})`);
+  });
 }
+
+module.exports = {
+  BASE_URL: process.env.BASE_URL,
+  RS_EMAIL: process.env.RS_EMAIL,
+  RS_PASSWORD: process.env.RS_PASSWORD,
+  DATA_PLANE_URL: process.env.DATA_PLANE_URL || '',
+  WRITE_KEY: process.env.WRITE_KEY || '',
+  WEBHOOK_URL: process.env.WEBHOOK_URL || '',
+};
