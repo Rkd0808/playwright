@@ -1,7 +1,7 @@
-import { request } from 'playwright';
-import fs from 'fs';
-import path from 'path';
-import assert from 'assert';
+const { request } = require('playwright');
+const fs = require('fs');
+const path = require('path');
+const assert = require('assert');
 
 // --- Create API Context ---
 export async function createAPIContext(DATA_PLANE_URL, SOURCE_WRITE_KEY) {
