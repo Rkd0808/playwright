@@ -1,6 +1,4 @@
 // config/env.js
-// import path from 'path';
-// import dotenv from 'dotenv';
 const path = require('path');
 const dotenv = require('dotenv');
 // Use process.cwd() for more reliable path resolution in CI

@@ -1,10 +1,11 @@
-import '../../config/env.js';
-import { Given, When, Then, Before } from '@cucumber/cucumber';
-import { promises as fs } from 'fs';
-import LoginPage from '../../pages/login.page.js';
-import ConnectionsPage from '../../pages/connections.page.js';
-import { createAPIContext, callRudderstack } from '../../utils/rudderstack.helper.js';
-import assert from 'assert';
+require('../../config/env.js');
+
+const { Given, When, Then, Before } = require('@cucumber/cucumber');
+const fs = require('fs').promises;
+const LoginPage = require('../../pages/login.page.js').default;
+const ConnectionsPage = require('../../pages/connections.page.js').default;
+const { createAPIContext, callRudderstack } = require('../../utils/rudderstack.helper.js');
+const assert = require('assert');
 
 
 
