@@ -1,5 +1,4 @@
 name: Nightly RudderStack E2E Tests - Playwright
-
 on:
   schedule:
     - cron: '0 1 * * *'  # Run daily at 1 AM UTC
@@ -14,13 +13,22 @@ on:
 jobs:
   playwright-tests:
     runs-on: ubuntu-22.04
-
     strategy:
       fail-fast: false
       matrix:
         environment: [qa]
         browser: [chromium]
-
+    env:  # ✅ Secrets available to all steps
+      BASE_URL: ${{ secrets.BASE_URL }}
+      USERNAME: ${{ secrets.RS_USERNAME }}
+      PASSWORD: ${{ secrets.RS_PASSWORD }}
+      DATA_PLANE_URL: ${{ secrets.DATA_PLANE_URL }}
+      WRITE_KEY: ${{ secrets.WRITE_KEY }}
+      WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+      BROWSER: ${{ matrix.browser }}
+      HEADLESS: true
+      TEST_TIMEOUT: 60000
+      API_RETRY_COUNT: 3
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -37,32 +45,10 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install
 
-      - name: Create environment file
-        run: |
-          mkdir -p config/env
-          cat << EOF > config/env/.env.${{ matrix.environment }}
-          BASE_URL=${{ secrets.BASE_URL }}
-          USERNAME=${{ secrets.RS_USERNAME }}
-          PASSWORD=${{ secrets.RS_PASSWORD }}
-          DATA_PLANE_URL=${{ secrets.DATA_PLANE_URL }}
-          WRITE_KEY=${{ secrets.WRITE_KEY }}
-          WEBHOOK_URL=${{ secrets.WEBHOOK_URL }}
-          BROWSER=${{ matrix.browser }}
-          HEADLESS=true
-          TEST_TIMEOUT=60000
-          API_RETRY_COUNT=3
-          EOF
-
       - name: Run Cucumber tests
-        env:
-          ENV: ${{ matrix.environment }}
-          BROWSER: ${{ matrix.browser }}
         run: npx cross-env ENV=${{ matrix.environment }} BROWSER=${{ matrix.browser }} npx cucumber-js --config cucumber.config.js
 
       - name: Run Playwright tests
-        env:
-          ENV: ${{ matrix.environment }}
-          BROWSER: ${{ matrix.browser }}
         run: npx playwright test
 
       - name: Upload test reports
