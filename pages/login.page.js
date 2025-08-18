@@ -1,4 +1,5 @@
 // pages/login.page.js
+require('../../config/env.js');
 class LoginPage {
   constructor(page) {
     this.page = page;
