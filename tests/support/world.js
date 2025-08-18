@@ -1,4 +1,6 @@
 // tests/support/world.js
+const { loadEnv } = require("../../config/loadEnv");
+loadEnv(); // load from .env.qa locally, or use GitHub secrets in CI
 const { setWorldConstructor, Before, After } = require('@cucumber/cucumber');
 const { chromium, firefox, webkit } = require('playwright');
 
