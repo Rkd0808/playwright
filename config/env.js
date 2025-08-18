@@ -1,20 +1,27 @@
-// config/env.js
-const path = require('path');
 const dotenv = require('dotenv');
+const path = require('path');
 
-const projectRoot = process.cwd();
-const envFileName = `.env.${process.env.ENV || 'dev'}`;
-const envPath = path.resolve(projectRoot, 'config', 'env', envFileName);
+// Determine environment
+const ENV = process.env.ENV || 'dev';
+const envFilePath = path.resolve(__dirname, `.env.${ENV}`);
 
-const result = dotenv.config({ path: envPath });
+// Load local .env only if variable is not already set (GitHub Actions will inject secrets)
+dotenv.config({ path: envFilePath });
 
-if (result.error) {
-  console.warn(`⚠️ Could not load env file at ${envPath}`);
-} else {
-  console.log(`✅ Loaded env file: ${envPath}`);
-}
+// Required variables
+const requiredVars = ['BASE_URL', 'USERNAME', 'PASSWORD'];
 
+requiredVars.forEach((v) => {
+  if (!process.env[v]) {
+    console.error(`❌ Missing required environment variable: ${v}`);
+    process.exit(1); // Fail fast
+  }
+});
+
+// Optional debug
 if (process.env.DEBUG === 'true') {
-  console.log(`BASE_URL: ${process.env.BASE_URL}`);
-  console.log(`USERNAME is set? ${!!process.env.USERNAME}`);
+  console.log(`Loaded env: ${envFilePath}`);
+  requiredVars.forEach((v) =>
+    console.log(`${v}: ${process.env[v] ? '****' : 'NOT SET'}`)
+  );
 }
