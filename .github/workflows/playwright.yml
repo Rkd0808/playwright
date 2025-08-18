@@ -32,9 +32,9 @@ jobs:
         run: npm run test:qa
         env:
           ENV: qa
-          BASE_URL: ${{ secrets.BASE_URL_QA }}
-          RS_EMAIL: ${{ secrets.RS_EMAIL_QA }}
-          RS_PASSWORD: ${{ secrets.RS_PASSWORD_QA }}
+          BASE_URL: ${{ secrets.BASE_URL }}
+          RS_EMAIL: ${{ secrets.RS_EMAIL }}
+          RS_PASSWORD: ${{ secrets.RS_PASSWORD }}
           DATA_PLANE_URL: ${{ secrets.DATA_PLANE_URL_QA }}
           WRITE_KEY: ${{ secrets.WRITE_KEY_QA }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL_QA }}
