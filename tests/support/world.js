@@ -5,9 +5,12 @@ const { chromium, firefox, webkit } = require('playwright');
 class CustomWorld {
   async init() {
     const browserType = process.env.BROWSER || 'chromium';
+    const isCI = process.env.CI === 'true';
+
     this.browser = await { chromium, firefox, webkit }[browserType].launch({
-      headless: process.env.HEADLESS === 'true'
+      headless: isCI ? true : (process.env.HEADLESS === 'true')
     });
+
     this.page = await this.browser.newPage();
   }
 
