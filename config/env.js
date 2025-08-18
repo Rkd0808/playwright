@@ -19,7 +19,7 @@ if (!process.env.CI) {
 }
 
 // Check required environment variables
-const REQUIRED_VARS = ['BASE_URL', 'USERNAME', 'PASSWORD'];
+const REQUIRED_VARS = ['BASE_URL', 'RS_EMAIL', 'RS_PASSWORD'];
 REQUIRED_VARS.forEach((key) => {
   if (!process.env[key]) {
     throw new Error(`❌ Missing required environment variable: ${key}`);
