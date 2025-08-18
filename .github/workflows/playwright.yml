@@ -31,16 +31,19 @@ jobs:
 
       - name: Map environment-specific secrets
         run: |
-          ENV_UPPER=$(echo ${{ matrix.env }} | tr '[:lower:]' '[:upper:]')
-
-          echo "BASE_URL=${{ secrets['BASE_URL_' + env.UPPER] }}" >> $GITHUB_ENV
-          echo "RS_EMAIL=${{ secrets['RS_EMAIL_' + env.UPPER] }}" >> $GITHUB_ENV
-          echo "RS_PASSWORD=${{ secrets['RS_PASSWORD_' + env.UPPER] }}" >> $GITHUB_ENV
-
-          # optional
-          echo "DATA_PLANE_URL=${{ secrets['DATA_PLANE_URL_' + env.UPPER] }}" >> $GITHUB_ENV
-          echo "WRITE_KEY=${{ secrets['WRITE_KEY_' + env.UPPER] }}" >> $GITHUB_ENV
-          echo "WEBHOOK_URL=${{ secrets['WEBHOOK_URL_' + env.UPPER] }}" >> $GITHUB_ENV
+          if [ "${{ matrix.env }}" = "dev" ]; then
+            echo "BASE_URL=${{ secrets.BASE_URL_DEV }}" >> $GITHUB_ENV
+            echo "RS_EMAIL=${{ secrets.RS_EMAIL_DEV }}" >> $GITHUB_ENV
+            echo "RS_PASSWORD=${{ secrets.RS_PASSWORD_DEV }}" >> $GITHUB_ENV
+          elif [ "${{ matrix.env }}" = "qa" ]; then
+            echo "BASE_URL=${{ secrets.BASE_URL_QA }}" >> $GITHUB_ENV
+            echo "RS_EMAIL=${{ secrets.RS_EMAIL_QA }}" >> $GITHUB_ENV
+            echo "RS_PASSWORD=${{ secrets.RS_PASSWORD_QA }}" >> $GITHUB_ENV
+          elif [ "${{ matrix.env }}" = "prod" ]; then
+            echo "BASE_URL=${{ secrets.BASE_URL_PROD }}" >> $GITHUB_ENV
+            echo "RS_EMAIL=${{ secrets.RS_EMAIL_PROD }}" >> $GITHUB_ENV
+            echo "RS_PASSWORD=${{ secrets.RS_PASSWORD_PROD }}" >> $GITHUB_ENV
+          fi
 
       - name: Run Cucumber Tests
         run: npm run test:${{ matrix.env }}
