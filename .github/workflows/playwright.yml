@@ -19,7 +19,7 @@ jobs:
         environment: [qa]
         browser: [chromium]
     env:  # ✅ Secrets available to all steps
-      BASEURL: ${{ secrets.BASEURL }}
+      BASE_URL: ${{ secrets.BASE_URL }}
       RS_EMAIL: ${{ secrets.RS_EMAIL }}
       PASSWORD: ${{ secrets.RS_PASSWORD }}
       DATA_PLANE_URL: ${{ secrets.DATA_PLANE_URL }}
