@@ -19,7 +19,8 @@ jobs:
       matrix:
         environment: [qa]
         browser: [chromium]
-    env:  # ✅ Secrets available to all steps
+    env:
+      # Secrets available to all steps
       BASE_URL: ${{ secrets.BASE_URL }}
       RS_EMAIL: ${{ secrets.RS_EMAIL }}
       RS_PASSWORD: ${{ secrets.RS_PASSWORD }}
@@ -49,13 +50,7 @@ jobs:
         run: npx playwright install
 
       - name: Run Cucumber QA tests
-        run: |
-          npx cross-env \
-            BASE_URL=$BASE_URL \
-            RS_EMAIL=$RS_EMAIL \
-            RS_PASSWORD=$RS_PASSWORD \
-            ENV=$ENV \
-            npx cucumber-js --config cucumber.config.js
+        run: npm run test:qa
 
       - name: Run Playwright tests
         run: npx playwright test
