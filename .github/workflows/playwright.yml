@@ -1,5 +1,4 @@
 name: Nightly RudderStack E2E Tests - Playwright
-
 on:
   schedule:
     - cron: '0 1 * * *'  # Run daily at 1 AM UTC
@@ -19,7 +18,18 @@ jobs:
       matrix:
         environment: [qa]
         browser: [chromium]
-
+    env:  # ✅ Secrets available to all steps
+      BASE_URL: ${{ secrets.BASE_URL }}
+      RS_EMAIL: ${{ secrets.RS_EMAIL }}
+      RS_PASSWORD: ${{ secrets.RS_PASSWORD }}
+      DATA_PLANE_URL: ${{ secrets.DATA_PLANE_URL }}
+      WRITE_KEY: ${{ secrets.WRITE_KEY }}
+      WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+      ENV: ${{ matrix.environment }}
+      BROWSER: ${{ matrix.browser }}
+      HEADLESS: true
+      TEST_TIMEOUT: 60000
+      API_RETRY_COUNT: 3
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -36,40 +46,10 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install
 
-      - name: Create minimal environment file
-        run: |
-          mkdir -p config/env
-          cat << EOF > config/env/.env.${{ matrix.environment }}
-          BASE_URL=${{ secrets.BASE_URL }}
-          USERNAME=${{ secrets.RS_EMAIL }}
-          PASSWORD=${{ secrets.RS_PASSWORD }}
-          BROWSER=${{ matrix.browser }}
-          HEADLESS=true
-          EOF
-
-      - name: Validate required secrets
-        run: |
-          if [ -z "$BASE_URL" ] || [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]; then
-            echo "❌ Missing one of the required secrets: BASE_URL, USERNAME, PASSWORD"
-            echo "Check repo settings → Secrets and variables → Actions"
-            exit 1
-          fi
-          echo "✅ Required secrets are set"
-        env:
-          BASE_URL: ${{ secrets.BASE_URL }}
-          USERNAME: ${{ secrets.RS_EMAIL }}
-          PASSWORD: ${{ secrets.RS_PASSWORD }}
-
       - name: Run Cucumber tests
-        env:
-          ENV: ${{ matrix.environment }}
-          BROWSER: ${{ matrix.browser }}
-        run: npx cross-env ENV=${{ matrix.environment }} BROWSER=${{ matrix.browser }} npx cucumber-js --config cucumber.config.js
+        run: npx cucumber-js --config cucumber.config.js
 
       - name: Run Playwright tests
-        env:
-          ENV: ${{ matrix.environment }}
-          BROWSER: ${{ matrix.browser }}
         run: npx playwright test
 
       - name: Upload test reports
