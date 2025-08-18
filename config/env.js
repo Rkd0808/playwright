@@ -1,17 +1,20 @@
 // config/env.js
 const path = require('path');
 const dotenv = require('dotenv');
-// Use process.cwd() for more reliable path resolution in CI
+
 const projectRoot = process.cwd();
-const envFileName = process.env.DOTENV_CONFIG_PATH || `.env.${process.env.ENV || 'dev'}`;
+const envFileName = `.env.${process.env.ENV || 'dev'}`;
 const envPath = path.resolve(projectRoot, 'config', 'env', envFileName);
 
-dotenv.config({ path: envPath });
+const result = dotenv.config({ path: envPath });
 
-// Optional debug logging
-if (process.env.DEBUG === 'true') {
-  console.log(`Loaded env file: ${envPath}`);
-  console.log(`BASE_URL: ${process.env.BASE_URL}`);
-  console.log(`RS_USER: ${process.env.EMAIL ? '******' : 'NOT SET'}`);
+if (result.error) {
+  console.warn(`⚠️ Could not load env file at ${envPath}`);
+} else {
+  console.log(`✅ Loaded env file: ${envPath}`);
 }
 
+if (process.env.DEBUG === 'true') {
+  console.log(`BASE_URL: ${process.env.BASE_URL}`);
+  console.log(`USERNAME is set? ${!!process.env.USERNAME}`);
+}
