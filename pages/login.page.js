@@ -15,14 +15,7 @@ class LoginPage {
   }
 
   async visit() {
-    const isCI = process.env.RUN_ENV === 'ci';
-    const url ="";
-    if (isCI) {
-       url =secrets.BASE_URL
-    }else{
-      url = process.env.BASE_URL;
-    }
-    // const url = process.env.BASE_URL;
+    const url = process.env.BASE_URL;
     if (!url) {
       throw new Error('BASE_URL environment variable is not set. Please check your environment configuration.');
     }
