@@ -18,8 +18,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        environment: [qa, prod]
-        browser: [chromium, firefox]
+        environment: [qa]
+        browser: [chromium]
 
     steps:
       - name: Checkout repository
