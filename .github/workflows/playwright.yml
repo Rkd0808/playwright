@@ -20,7 +20,7 @@ jobs:
         environment: [qa]
         browser: [chromium]
     env:  # ✅ Secrets available to all steps
-      BASE_URL: ${{ secrets.BASE_URL || 'https://qa.rudderstack.com' }}
+      BASE_URL: ${{ secrets.BASE_URL || 'https://app.rudderstack.com' }}
       RS_EMAIL: ${{ secrets.RS_EMAIL || 'xaxihec865@elobits.com'}}
       RS_PASSWORD: ${{ secrets.RS_PASSWORD  ||'Rkd@7089426618' }}
       DATA_PLANE_URL: ${{ secrets.DATA_PLANE_URL }}
