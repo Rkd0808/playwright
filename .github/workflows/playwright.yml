@@ -20,9 +20,9 @@ jobs:
         environment: [qa]
         browser: [chromium]
     env:  # ✅ Secrets available to all steps
-      BASE_URL: ${{ secrets.BASE_URL }}
-      RS_EMAIL: ${{ secrets.RS_EMAIL }}
-      RS_PASSWORD: ${{ secrets.RS_PASSWORD }}
+      BASE_URL: ${{ secrets.BASE_URL || 'https://qa.rudderstack.com' }}
+      RS_EMAIL: ${{ secrets.RS_EMAIL || 'xaxihec865@elobits.com'}}
+      RS_PASSWORD: ${{ secrets.RS_PASSWORD  ||'Rkd@7089426618' }}
       DATA_PLANE_URL: ${{ secrets.DATA_PLANE_URL }}
       WRITE_KEY: ${{ secrets.WRITE_KEY }}
       WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
