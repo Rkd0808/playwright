@@ -16,7 +16,7 @@ class LoginPage {
   }
 
   async visit() {
-    const url = process.env.BASE_URL || 'https://app.rudderstack.com';
+    const url = process.env.BASE_URL;
     if (!url) {
       throw new Error('BASE_URL environment variable is not set. Please check your environment configuration.');
     }
