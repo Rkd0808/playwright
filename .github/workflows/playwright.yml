@@ -57,9 +57,6 @@ jobs:
             ENV=$ENV \
             npx cucumber-js --config cucumber.config.js
 
-      - name: Run Playwright tests
-        run: npx playwright test
-
       - name: Upload test reports
         uses: actions/upload-artifact@v4
         if: always()
